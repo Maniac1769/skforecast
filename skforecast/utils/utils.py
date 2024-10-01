@@ -2939,3 +2939,48 @@ def set_skforecast_warnings(
     if suppress_warnings:
         for category in warn_skforecast_categories:
             warnings.filterwarnings(action, category=category)
+
+
+
+
+import pandas as pd
+
+def _preprocess_initial_train_size(y: pd.Series, initial_train_size):
+    """
+    Preprocess initial_train_size to handle both integers and dates.
+
+    Parameters
+    ----------
+    y : pandas Series
+        Time series data.
+    initial_train_size : int, str, pandas.Timestamp, etc.
+        If int, it represents the number of initial observations.
+        If str or pandas.Timestamp, it represents a date.
+
+    Returns
+    -------
+    int
+        Number of initial observations based on the processed initial_train_size.
+    
+    Raises
+    ------
+    TypeError
+        If y does not have a pd.DatetimeIndex and initial_train_size is not an integer.
+    """
+    if isinstance(initial_train_size, int):
+        return initial_train_size
+    
+    # If initial_train_size is a date, we need to handle it.
+    if not isinstance(y.index, pd.DatetimeIndex):
+        raise TypeError("If y does not have a pd.DatetimeIndex, initial_train_size must be an integer.")
+
+    # Convert initial_train_size to a timestamp if it's a date string
+    initial_train_size_date = pd.to_datetime(initial_train_size)
+
+    # Ensure the date is within the range of y's index
+    if initial_train_size_date not in y.index:
+        raise ValueError("The date provided is not in the time series index.")
+
+    # Calculate the number of observations up to and including the given date
+    return y.index.get_loc(initial_train_size_date) + 1
+
