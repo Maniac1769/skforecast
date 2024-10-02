@@ -600,7 +600,7 @@ def backtesting_forecaster(
     y: pd.Series,
     steps: int,
     metric: Union[str, Callable, list],
-    initial_train_size: Optional[int] = None,
+    initial_train_size: Optional[Union[int, str]] = None,  # Allow str input
     fixed_train_size: bool = True,
     gap: int = 0,
     skip_folds: Optional[Union[int, list]] = None,
@@ -616,6 +616,7 @@ def backtesting_forecaster(
     verbose: bool = False,
     show_progress: bool = True
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+
     """
     Backtesting of forecaster model.
 
@@ -720,7 +721,10 @@ def backtesting_forecaster(
         - column upper_bound: upper bound of the interval.
     
     """
-
+    
+    # Preprocess the initial_train_size
+    if initial_train_size is not None:
+        initial_train_size = _preprocess_initial_train_size(y, initial_train_size)
     forecaters_allowed = [
         'ForecasterAutoreg', 
         'ForecasterAutoregCustom', 
